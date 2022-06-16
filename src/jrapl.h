@@ -2,8 +2,8 @@
 #include <jni.h>
 /* Header for class EnergyCheckUtils */
 
-#ifndef _Included_EnergyCheckUtils
-#define _Included_EnergyCheckUtils
+#ifndef _Included_edu_binghamton_vpc_JRapl
+#define _Included_edu_binghamton_vpc_JRapl
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -12,7 +12,7 @@ extern "C" {
  * Method:    ProfileInit
  * Signature: ()I
  */
-JNIEXPORT jint JNICALL Java_jrapl_util_EnergyCheckUtils_ProfileInit
+JNIEXPORT jint JNICALL Java_Included_edu_binghamton_vpc_JRapl_ProfileInit
   (JNIEnv *, jclass);
 
 /*
@@ -20,7 +20,7 @@ JNIEXPORT jint JNICALL Java_jrapl_util_EnergyCheckUtils_ProfileInit
  * Method:    GetSocketNum
  * Signature: ()I
  */
-JNIEXPORT jint JNICALL Java_jrapl_util_EnergyCheckUtils_GetSocketNum
+JNIEXPORT jint JNICALL Java_Included_edu_binghamton_vpc_JRapl_GetSocketNum
   (JNIEnv *, jclass);
 
 /*
@@ -28,7 +28,7 @@ JNIEXPORT jint JNICALL Java_jrapl_util_EnergyCheckUtils_GetSocketNum
  * Method:    EnergyStatCheck
  * Signature: ()Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_jrapl_util_EnergyCheckUtils_EnergyStatCheck
+JNIEXPORT jstring JNICALL Java_Included_edu_binghamton_vpc_JRapl_EnergyStatCheck
   (JNIEnv *, jclass);
 
 /*
@@ -36,7 +36,7 @@ JNIEXPORT jstring JNICALL Java_jrapl_util_EnergyCheckUtils_EnergyStatCheck
  * Method:    ProfileDealloc
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_jrapl_util_EnergyCheckUtils_ProfileDealloc
+JNIEXPORT void JNICALL Java_Included_edu_binghamton_vpc_JRapl_ProfileDealloc
   (JNIEnv *, jclass);
 
 #ifdef __cplusplus

@@ -91,6 +91,33 @@ public final class JRapl {
     }
   }
 
+  /** @returns the sum of all energy counters */
+  public synchronized double getEnergy() {
+    // guard if CPUScaler isn't available
+    if (socketCount < 0) {
+      return -1;
+    }
+
+    String EnergyInfo = EnergyStatCheck();
+    if (socketCount == 1) {
+      // single socket
+      double energy = 0;
+      for (String e : EnergyInfo.split("#")) {
+        energy += Double.parseDouble(e);
+      }
+      return energy;
+    } else {
+      // multi-socket
+      double energy = 0;
+      for (String estring : EnergyInfo.split("@")) {
+        for (String e : EnergyInfo.split("#")) {
+          energy += Double.parseDouble(e);
+        }
+      }
+      return energy;
+    }
+  }
+
   public int getSocketCount() {
     return socketCount;
   }

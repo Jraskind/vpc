@@ -1,7 +1,7 @@
 #include <jni.h>
 
-#ifndef _Included_edu_binghamton_vpc_PerfUtils
-#define _Included_edu_binghamton_vpc_PerfUtils
+#ifndef _Included_edu_binghamton_vpc_MonotonicTimestamp
+#define _Included_edu_binghamton_vpc_MonotonicTimestamp
 #ifdef __cplusplus
 extern "C" {
 #endif

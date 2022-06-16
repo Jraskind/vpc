@@ -7,7 +7,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <inttypes.h>
-#include "arch_spec.h"
 #include "msr.h"
 #include "jrapl.h"
 
@@ -36,7 +35,7 @@ void copy_to_string(char *ener_info, char uncore_buffer[60], int uncore_num, cha
 }
 
 
-JNIEXPORT jint JNICALL Java_jrapl_Rapl_ProfileInit(JNIEnv *env, jclass jcls) {
+JNIEXPORT jint JNICALL Java_edu_binghamton_vpc_JRapl_ProfileInit(JNIEnv *env, jclass jcls) {
 	jintArray result;
 	int i;
 	char msr_filename[BUFSIZ];
@@ -67,7 +66,7 @@ JNIEXPORT jint JNICALL Java_jrapl_Rapl_ProfileInit(JNIEnv *env, jclass jcls) {
 	return wraparound_energy;
 }
 
-JNIEXPORT jint JNICALL Java_jrapl_Rapl_GetSocketNum(JNIEnv *env, jclass jcls) {
+JNIEXPORT jint JNICALL Java_edu_binghamton_vpc_JRapl_GetSocketNum(JNIEnv *env, jclass jcls) {
 	return (jint)getSocketNum();
 }
 
@@ -142,7 +141,7 @@ initialize_energy_info(char gpu_buffer[num_pkg][60], char dram_buffer[num_pkg][6
 }
 
 
-JNIEXPORT jstring JNICALL Java_jrapl_Rapl_EnergyStatCheck(JNIEnv *env,
+JNIEXPORT jstring JNICALL Java_edu_binghamton_vpc_JRapl_EnergyStatCheck(JNIEnv *env,
 		jclass jcls) {
 	jstring ener_string;
 	char gpu_buffer[num_pkg][60];
@@ -237,7 +236,7 @@ JNIEXPORT jstring JNICALL Java_jrapl_Rapl_EnergyStatCheck(JNIEnv *env,
 	return ener_string;
 
 }
-JNIEXPORT void JNICALL Java_jrapl_Rapl_ProfileDealloc
+JNIEXPORT void JNICALL Java_edu_binghamton_vpc_JRapl_ProfileDealloc
    (JNIEnv * env, jclass jcls) {
 	int i;
 	free(fd);
