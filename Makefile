@@ -2,6 +2,7 @@ CC = gcc
 CFLAGS = -fPIC -g
 
 SOURCES = src
+RAPL_SOURCES = $(SOURCES)/arch_spec.o $(SOURCES)/msr.o $(SOURCES)/rapl.o
 TARGET = bin
 
 JAVA_HOME = $(shell readlink -f /usr/bin/javac | sed "s:bin/javac::")
@@ -24,7 +25,7 @@ get_java_deps:
 
 .PHONY: %.o %.class
 %.o: %.c
-	$(CC) -c -o $@ $< $(CFLAGS) $(JNI_INCLUDE)
+	$(CC) -c -o $@ $^ $(CFLAGS) $(JNI_INCLUDE)
 
 %.class: %.java
 	$(JAVAC) -cp $(JAVA_CLASSPATH) $^ -d .
@@ -38,14 +39,14 @@ libMonotonic.so: $(SOURCES)/monotonic_timestamp.o
 	$(CC) -shared -Wl,-soname,$@ -o $(TARGET)/$@ $^ $(JNI_INCLUDE) -lc
 	rm -f $^
 
-libRapl.so: $(SOURCES)/*.o
+libRapl.so: $(RAPL_SOURCES)
 	mkdir -p $(TARGET)
 	$(CC) -shared -Wl,-soname,$@ -o $(TARGET)/$@ $^ $(JNI_INCLUDE) -lc
 	rm -f $^
 
 smoke_test: jar libRapl.so libMonotonic.so
 	java -cp $(JAR) edu.binghamton.vpc.MonotonicTimestamp $(TARGET)/libMonotonic.so
-	java -cp $(JAR) edu.binghamton.vpc.JRapl $(TARGET)/libRapl.so
+	java -cp $(JAR) edu.binghamton.vpc.Rapl $(TARGET)/libRapl.so
 	java -Dvpc.library.path=lib -cp $(JAR):$(JAVA_CLASSPATH) Harness sunflow -c edu.binghamton.vpc.VpcDacapoCallback
 	@echo 'all targets successfully built!'
 

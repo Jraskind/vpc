@@ -1,16 +1,16 @@
 package edu.binghamton.vpc;
 
 /** Class that provides a singleton interface to RAPL measurements. */
-public final class JRapl {
-  private static JRapl instance;
+public final class Rapl {
+  private static Rapl instance;
 
-  public static JRapl getInstance() {
+  public static Rapl getInstance() {
     return getInstance(null);
   }
 
   /** Returns the rapl instance, creating a new one if necessary. */
-  public static JRapl getInstance(String path) {
-    synchronized (JRapl.class) {
+  public static Rapl getInstance(String path) {
+    synchronized (Rapl.class) {
       if (instance != null) {
         return instance;
       }
@@ -21,14 +21,14 @@ public final class JRapl {
         System.load(path);
       }
 
-      instance = new JRapl();
+      instance = new Rapl();
       return instance;
     }
   }
 
   /** Shuts down the instance. */
   public static void shutdown() {
-    synchronized (JRapl.class) {
+    synchronized (Rapl.class) {
       if (instance == null) {
         return;
       }
@@ -48,7 +48,7 @@ public final class JRapl {
   private final int socketCount;
   private final double wrapAroundEnergy;
 
-  private JRapl() {
+  private Rapl() {
     wrapAroundEnergy = ProfileInit();
     socketCount = GetSocketNum();
   }
