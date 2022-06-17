@@ -47,9 +47,9 @@ public final class SampleCollector {
               new BufferedWriter(
                   new FileWriter(
                       String.join("/", System.getProperty("vpc.output.directory"), "energy.csv"))));
-      writer.print("iteration,timestamp,duration,energy");
+      writer.println("iteration,timestamp,duration,energy");
       for (Sample sample : samples) {
-        writer.print(
+        writer.println(
             String.format(
                 "%d,%d,%d,%f", sample.iteration, sample.timestamp, sample.duration, sample.energy));
       }
