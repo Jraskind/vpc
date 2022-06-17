@@ -14,10 +14,8 @@ public final class SampleCollector {
   }
 
   private static double getEnergy() {
-    return 0;
-    // return Rapl.getInstance(String.join("/", System.getProperty("vpc.library.path"),
-    // "libRapl.so"))
-    //     .getEnergy();
+    return Rapl.getInstance(String.join("/", System.getProperty("vpc.library.path"), "libRapl.so"))
+        .getEnergy();
   }
 
   private final ArrayList<Sample> samples = new ArrayList<>();

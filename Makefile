@@ -47,7 +47,7 @@ libRapl.so: $(RAPL_SOURCES)
 smoke_test: jar libRapl.so libMonotonic.so
 	java -cp $(JAR) edu.binghamton.vpc.MonotonicTimestamp $(TARGET)/libMonotonic.so
 	java -cp $(JAR) edu.binghamton.vpc.Rapl $(TARGET)/libRapl.so
-	java -Dvpc.library.path=lib -cp $(JAR):$(JAVA_CLASSPATH) Harness sunflow -c edu.binghamton.vpc.VpcDacapoCallback
+	java -Dvpc.library.path=$PWD/lib -cp $(JAR):$(JAVA_CLASSPATH) Harness sunflow -c edu.binghamton.vpc.VpcDacapoCallback
 	@echo 'all targets successfully built!'
 
 clean:
