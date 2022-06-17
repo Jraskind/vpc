@@ -110,7 +110,7 @@ public final class Rapl {
       // multi-socket
       double energy = 0;
       for (String estring : EnergyInfo.split("@")) {
-        for (String e : EnergyInfo.split("#")) {
+        for (String e : estring.split("#")) {
           energy += Double.parseDouble(e);
         }
       }
