@@ -47,11 +47,11 @@ public final class SampleCollector {
               new BufferedWriter(
                   new FileWriter(
                       String.join("/", System.getProperty("vpc.output.directory"), "energy.csv"))));
-      writer.write("iteration,timestamp,duration,energy");
+      writer.print("iteration,timestamp,duration,energy");
       for (Sample sample : samples) {
-        writer.write(
+        writer.print(
             String.format(
-                "%d,%d,%f%f", sample.iteration, sample.timestamp, sample.duration, sample.energy));
+                "%d,%d,%d,%f", sample.iteration, sample.timestamp, sample.duration, sample.energy));
       }
       writer.close();
     } catch (IOException e) {
