@@ -1,6 +1,7 @@
 # !/usr/bin/python
 
 import argparse
+import os
 
 from bcc import BPF, USDT
 
@@ -40,20 +41,20 @@ int notify_%s(void *ctx) {
 }
 """
 
-IS_RUNNING = False
+IS_RUNNING = True
 PROBE_DATA = []
 
 
 def generate_probe_tracing_program(probes):
-    return '\n'.join(BPF_HEADER + [BPF_PROBE_HOOK % (x, x, x) for x in probes])
+    return '\n'.join([BPF_HEADER] + [BPF_PROBE_HOOK % (x, x, x) for x in probes])
 
 
 def shutdown_hook(cpu, data, size):
     with open('probes.csv', 'w') as fp:
-        fp.write('\n'.join(PROBE_DATA))
+        fp.write('\n'.join(PROBE_DATA) + '\n')
 
     global IS_RUNNING
-    IS_RUNNING = True
+    IS_RUNNING = False
 
 
 def tracing_hook(bpf, probe, cpu, data, size):
@@ -61,7 +62,7 @@ def tracing_hook(bpf, probe, cpu, data, size):
     PROBE_DATA.append('%s,%d,%d' % (probe, event.ts, BPF.monotonic_time()))
 
 
-def parse_args(args):
+def parse_args():
     parser = argparse.ArgumentParser(description='jvm probe tracer')
     parser.add_argument('-p', '--pid', type=int, help='java process to trace')
     parser.add_argument(
@@ -69,6 +70,12 @@ def parse_args(args):
         default='monitor__wait',
         type=str,
         help='jvm probes to trace'
+    )
+    parser.add_argument(
+        '--output_directory',
+        default='.',
+        type=str,
+        help='location to write the log'
     )
 
     return parser.parse_args()
@@ -84,9 +91,14 @@ def main():
     for probe in probes:
         usdt.enable_probe(probe=probe, fn_name='notify_%s' % probe)
 
-    code = generate_probe_tracing_program(args.probes.split(',')),
+    code = generate_probe_tracing_program(args.probes.split(','))
     bpf = BPF(text=code, usdt_contexts=[usdt])
-    bpf['vm_shutdown'].open_perf_buffer(shutdown_hook)
+    bpf['vm_shutdown'].open_perf_buffer(lambda cpu, data, size: shutdown_hook(
+        args.output_directory,
+        cpu,
+        data,
+        size
+    ))
     for probe in probes:
         bpf[probe].open_perf_buffer(
             lambda cpu, data, size: tracing_hook(bpf, probe, cpu, data, size)
