@@ -43,6 +43,7 @@ int notify_%s(void *ctx) {
 
 IS_RUNNING = True
 PROBE_DATA = []
+DATA_HEADER = 'probe,event_time,sample_time'
 
 
 def generate_probe_tracing_program(probes):
@@ -51,7 +52,7 @@ def generate_probe_tracing_program(probes):
 
 def shutdown_hook(output_path, cpu, data, size):
     with open(os.path.join(output_path, 'probes.csv'), 'w') as fp:
-        fp.write('\n'.join(PROBE_DATA) + '\n')
+        fp.write('\n'.join([DATA_HEADER] + PROBE_DATA) + '\n')
 
     global IS_RUNNING
     IS_RUNNING = False
