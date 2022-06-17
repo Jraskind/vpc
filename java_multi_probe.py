@@ -63,6 +63,18 @@ def tracing_hook(bpf, probe, cpu, data, size):
     PROBE_DATA.append('%s,%d,%d' % (probe, event.ts, BPF.monotonic_time()))
 
 
+def add_tracing_hook(bpf, probe):
+    bpf[probe].open_perf_buffer(
+        lambda cpu, data, size: tracing_hook(
+            bpf,
+            probe,
+            cpu,
+            data,
+            size
+        )
+    )
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description='jvm probe tracer')
     parser.add_argument('-p', '--pid', type=int, help='java process to trace')
@@ -101,9 +113,7 @@ def main():
         size
     ))
     for probe in probes:
-        bpf[probe].open_perf_buffer(
-            lambda cpu, data, size: tracing_hook(bpf, probe, cpu, data, size)
-        )
+        add_tracing_hook(bpf, probe)
 
     while IS_RUNNING:
         bpf.perf_buffer_poll(timeout=1)
