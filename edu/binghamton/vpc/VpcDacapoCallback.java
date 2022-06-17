@@ -4,11 +4,10 @@ import org.dacapo.harness.Callback;
 import org.dacapo.harness.CommandLineArgs;
 
 public class VpcDacapoCallback extends Callback {
-  private final SampleCollector collector;
+  private final SampleCollector collector = new SampleCollector();
 
   public VpcDacapoCallback(CommandLineArgs args) {
     super(args);
-    collector = new SampleCollector();
   }
 
   @Override
