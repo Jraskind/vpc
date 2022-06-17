@@ -16,7 +16,7 @@ public final class JRapl {
       }
 
       if (path == null) {
-        System.loadLibrary("CPUScaler");
+        System.loadLibrary("Rapl");
       } else {
         System.load(path);
       }
@@ -127,7 +127,8 @@ public final class JRapl {
   }
 
   public static void main(String[] args) {
-    for (double[] socketEnergy : getInstance().getEnergyStats()) {
+    for (double[] socketEnergy :
+        getInstance(String.join("/", System.getProperty("user.dir"), args[0])).getEnergyStats()) {
       for (double componentEnergy : socketEnergy) {
         System.out.println(componentEnergy);
       }

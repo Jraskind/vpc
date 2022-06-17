@@ -2,3 +2,6 @@
 *.so
 *.class
 *.jar
+
+bin
+lib

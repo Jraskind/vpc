@@ -15,7 +15,7 @@ public final class MonotonicTimestamp {
       }
 
       if (path == null) {
-        System.loadLibrary("CPUScaler");
+        System.loadLibrary("Monotonic");
       } else {
         System.load(path);
       }
@@ -28,6 +28,10 @@ public final class MonotonicTimestamp {
   public native long getMonotonicTimestamp();
 
   public static void main(String[] args) {
-    System.out.println("The time is " + getInstance(args[0]).getMonotonicTimestamp() + "!");
+    System.out.println(
+        "The time is "
+            + getInstance(String.join("/", System.getProperty("user.dir"), args[0]))
+                .getMonotonicTimestamp()
+            + "!");
   }
 }
