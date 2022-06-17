@@ -49,8 +49,8 @@ def generate_probe_tracing_program(probes):
     return '\n'.join([BPF_HEADER] + [BPF_PROBE_HOOK % (x, x, x) for x in probes])
 
 
-def shutdown_hook(cpu, data, size):
-    with open('probes.csv', 'w') as fp:
+def shutdown_hook(output_path, cpu, data, size):
+    with open(os.path.join(output_path, 'probes.csv'), 'w') as fp:
         fp.write('\n'.join(PROBE_DATA) + '\n')
 
     global IS_RUNNING
