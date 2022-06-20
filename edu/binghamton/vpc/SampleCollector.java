@@ -78,6 +78,7 @@ public final class SampleCollector {
   }
 
   public void dump() {
+    executor.shutdown();
     try {
       PrintWriter writer =
           new PrintWriter(
