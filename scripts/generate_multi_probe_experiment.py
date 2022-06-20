@@ -50,7 +50,10 @@ with open(exp_path + "/benchmarks") as fp:
                 #Renaissance benchmarks need the ren_jars
                 output_file.write("%s -XX:+ExtendedDTraceProbes -Dvpc.library.path=%s -Dvpc.output.directory=%s/%d_%d_%s -cp %s -jar %s -r %d --plugin /home/jraskin3/timur_vpc/vpc.jar!edu.binghamton.vpc.VpcRenaissancePlugin %s &\n"%(java_path,library_path,exp_path,cluster_count,bench_count,benchmark,renaissance_path, renaissance_jar, iters, benchmark))
             #Both Dacapo & Renaissance have the same java_multi_probes step 
-            output_file.write("python3 %sjava_multi_probe.py --pid $! --probes=%s --output_directory=%s/%d_%d_%s \n"%(script_path,probes_list,exp_path,cluster_count,bench_count,benchmark))
+            if probes_list != "none":
+                output_file.write("python3 %sjava_multi_probe.py --pid $! --probes=%s --output_directory=%s/%d_%d_%s \n"%(script_path,probes_list,exp_path,cluster_count,bench_count,benchmark))
+            else:
+                output_file.write("tail --pid=$! -f /dev/null \n")
             create_dir("%s/%d_%d_%s"%(exp_path,cluster_count,bench_count,benchmark))
             bench_count = bench_count + 1
         cluster_count = cluster_count + 1
