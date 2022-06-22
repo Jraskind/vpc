@@ -135,7 +135,7 @@ public final class SampleCollector {
             Arrays.stream(s.energy)
                 .flatMap(e -> Arrays.stream(e).mapToObj(c -> String.format("%f", c)))
                 .collect(joining(","));
-        writer.println(String.format("%d,%d,%f", s.iteration, s.timestamp, energy));
+        writer.println(String.format("%d,%d,%s", s.iteration, s.timestamp, energy));
       }
       writer.close();
     } catch (IOException e) {
