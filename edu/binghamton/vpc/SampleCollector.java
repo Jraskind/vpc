@@ -1,13 +1,17 @@
 package edu.binghamton.vpc;
 
+import static java.util.stream.Collectors.joining;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.IntStream;
 
 public final class SampleCollector {
   private static long getMonotonicTimestamp() {
@@ -16,9 +20,23 @@ public final class SampleCollector {
         .getMonotonicTimestamp();
   }
 
-  private static double getEnergy() {
+  private static double[][] getEnergy() {
     return Rapl.getInstance(String.join("/", System.getProperty("vpc.library.path"), "libRapl.so"))
-        .getEnergy();
+        .getEnergyStats();
+  }
+
+  private static double computeEnergyDifference(double[][] first, double[][] second) {
+    double energy = 0;
+    for (int socket = 0; socket < Rapl.getInstance().getSocketCount(); socket++) {
+      for (int component = 0; component < first[socket].length; component++) {
+        double diff = second[socket][component] - first[socket][component];
+        if (diff < 0) {
+          diff += Rapl.getInstance().getWrapAroundEnergy();
+        }
+        energy += diff;
+      }
+    }
+    return energy;
   }
 
   private final ArrayList<Summary> summary = new ArrayList<>();
@@ -28,7 +46,7 @@ public final class SampleCollector {
   private boolean isRunning = false;
   private Future<ArrayList<Sample>> sampleFuture;
 
-  private Summary summaryStart;
+  private Sample summaryStart;
   private int iteration = 0;
 
   public SampleCollector() {
@@ -38,7 +56,7 @@ public final class SampleCollector {
   public void start() {
     isRunning = true;
 
-    summaryStart = new Summary(iteration, getMonotonicTimestamp(), getEnergy());
+    summaryStart = new Sample(iteration, getMonotonicTimestamp(), getEnergy());
     sampleFuture =
         executor.submit(
             () -> {
@@ -65,7 +83,7 @@ public final class SampleCollector {
             iteration,
             summaryStart.timestamp,
             getMonotonicTimestamp() - summaryStart.timestamp,
-            getEnergy() - summaryStart.energy));
+            computeEnergyDifference(summaryStart.energy, getEnergy())));
     try {
       samples.addAll(sampleFuture.get());
     } catch (Exception e) {
@@ -103,9 +121,21 @@ public final class SampleCollector {
               new BufferedWriter(
                   new FileWriter(
                       String.join("/", System.getProperty("vpc.output.directory"), "energy.csv"))));
-      writer.println("iteration,timestamp,energy");
+      int componentCount = samples.get(0).energy[0].length * Rapl.getInstance().getSocketCount();
+      writer.println(
+          String.join(
+              ",",
+              "iteration",
+              "timestamp",
+              IntStream.range(0, componentCount)
+                  .mapToObj(i -> String.format("energy_component_%d", i))
+                  .collect(joining(","))));
       for (Sample s : samples) {
-        writer.println(String.format("%d,%d,%f", s.iteration, s.timestamp, s.energy));
+        String energy =
+            Arrays.stream(s.energy)
+                .flatMap(e -> Arrays.stream(e).mapToObj(c -> String.format("%f", c)))
+                .collect(joining(","));
+        writer.println(String.format("%d,%d,%f", s.iteration, s.timestamp, energy));
       }
       writer.close();
     } catch (IOException e) {
@@ -139,9 +169,9 @@ public final class SampleCollector {
   private static class Sample {
     private final int iteration;
     private final long timestamp;
-    private final double energy;
+    private final double[][] energy;
 
-    private Sample(int iteration, long timestamp, double energy) {
+    private Sample(int iteration, long timestamp, double[][] energy) {
       this.iteration = iteration;
       this.timestamp = timestamp;
       this.energy = energy;
