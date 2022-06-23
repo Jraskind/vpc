@@ -16,8 +16,8 @@ iters = args.iters
 launch_path = exp_path + "/launch/"
 library_path = "/home/jraskin3/timur_vpc/bin/"
 dacapo_path = "/home/jraskin3/timur_vpc/lib/dacapo.jar:/home/jraskin3/timur_vpc/vpc.jar"
-renaissance_path = "/home/jraskin3/timur_vpc/lib/renaissance-gpl-0.11.0.jar:/home/jraskin3/timur_vpc/vpc.jar"
-renaissance_jar = "/home/jraskin3/timur_vpc/lib/renaissance-gpl-0.11.0.jar"
+renaissance_path = "/home/jraskin3/timur_vpc/lib/renaissance-gpl-0.14.1.jar:/home/jraskin3/timur_vpc/vpc.jar"
+renaissance_jar = "/home/jraskin3/timur_vpc/lib/renaissance-gpl-0.14.1.jar"
 script_path = "/home/jraskin3/timur_vpc/scripts/"
 def create_dir(str_dir):
     try:
