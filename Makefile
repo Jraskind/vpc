@@ -16,13 +16,6 @@ JAVA_CLASSPATH = lib/dacapo.jar:lib/renaissance-gpl-0.11.0.jar
 JAVA_SOURCES = edu/binghamton/vpc
 JAR = vpc.jar
 
-get_java_deps:
-	mkdir -p lib
-	wget https://sourceforge.net/projects/dacapobench/files/evaluation/dacapo-evaluation-git%2B309e1fa.jar/download
-	mv download lib/dacapo.jar
-	wget https://github.com/renaissance-benchmarks/renaissance/releases/download/v0.14.1/renaissance-gpl-0.14.1.jar
-	mv renaissance-gpl-0.14.1.jar lib/renaissance-gpl-0.14.1.jar
-
 .PHONY: %.o %.class
 %.o: %.c
 	$(CC) -c -o $@ $^ $(CFLAGS) $(JNI_INCLUDE)
@@ -51,3 +44,10 @@ smoke_test: jar libRapl.so libMonotonic.so
 
 clean:
 	rm -r $(SOURCES)/*.o $(TARGET) $(JAVA_SOURCES)/*.class $(JAR)
+
+get_java_deps:
+	mkdir -p lib
+	wget https://sourceforge.net/projects/dacapobench/files/evaluation/dacapo-evaluation-git%2B309e1fa.jar/download
+	mv download lib/dacapo.jar
+	wget https://github.com/renaissance-benchmarks/renaissance/releases/download/v0.14.1/renaissance-gpl-0.14.1.jar
+	mv renaissance-gpl-0.14.1.jar lib/renaissance-gpl-0.14.1.jar
