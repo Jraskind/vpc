@@ -229,7 +229,8 @@ void get_msr_unit(rapl_msr_unit *unit_obj, uint64_t data) {
 /*Get wraparound value in order to prevent nagetive value*/
 void
 get_wraparound_energy(double energy_unit) {
-  uint32_t highest_possible_register_value = 0xFFFFFFFF;
+  //uint32_t highest_possible_register_value = 0xFFFFFFFF;
+  double highest_possible_register_value = pow(2, 32) - 1;
 	WRAPAROUND_VALUE = highest_possible_register_value * energy_unit;
 }
 
