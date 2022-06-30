@@ -36,7 +36,7 @@ mkdir -p "${CURRENT_DIR}"/data/renaissance
 
 DATA_DIR="${CURRENT_DIR}"/data/renaissance/reference
 mkdir -p "${DATA_DIR}"
-java -Dvpc.library.path="${CURRENT_DIR}"/bin -Dvpc.output.directory="${CURRENT_DIR}"/data/reference  -Dvpc.baseline.path="${REF_DIR}" \
+java -Dvpc.library.path="${CURRENT_DIR}"/bin -Dvpc.output.directory="${CURRENT_DIR}"/data/renaissance/reference  -Dvpc.baseline.path="${REF_DIR}" \
   -cp lib/renaissance-gpl-0.11.0.jar:vpc.jar -jar lib/renaissance-gpl-0.11.0.jar \
   --plugin vpc.jar!edu.binghamton.vpc.VpcRenaissancePlugin \
   -r "${ITERATIONS}" \
@@ -45,7 +45,7 @@ java -Dvpc.library.path="${CURRENT_DIR}"/bin -Dvpc.output.directory="${CURRENT_D
 REF_DIR="${DATA_DIR}"
 DATA_DIR="${CURRENT_DIR}"/data/renaissance/filtered
 mkdir -p "${DATA_DIR}"
-java -Dvpc.library.path="${CURRENT_DIR}"/bin -Dvpc.output.directory="${CURRENT_DIR}"/data/filtered  -Dvpc.baseline.path="${REF_DIR}" \
+java -Dvpc.library.path="${CURRENT_DIR}"/bin -Dvpc.output.directory="${CURRENT_DIR}"/data/renaissance/filtered  -Dvpc.baseline.path="${REF_DIR}" \
   -Dvpc.renaissance.args="${ITERATIONS},${WINDOW},${VARIANCE}" \
   -cp lib/renaissance-gpl-0.11.0.jar:vpc.jar -jar lib/renaissance-gpl-0.11.0.jar \
   --plugin vpc.jar!edu.binghamton.vpc.FilteringVpcRenaissancePlugin \
