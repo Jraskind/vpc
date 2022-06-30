@@ -43,16 +43,25 @@ public class FilteringVpcDacapoCallback extends Callback {
               .mapToDouble(s -> s.duration)
               .average()
               .orElse(0);
-      if (runtime / baselineRuntime > threshold) {
+      if (runtime / baselineRuntime > nextThreshold()) {
         System.out.println(
             String.format(
                 "last %d runs exceeded threshold (%f / %f = %f > %f)",
                 iterations, runtime, baselineRuntime, runtime / baselineRuntime, threshold));
         collector.dumpWithStatus(false);
         return false;
+      } else {
+        System.out.println(
+            String.format(
+                "last %d runs met threshold (%f / %f = %f < %f)",
+                iterations, runtime, baselineRuntime, runtime / baselineRuntime, threshold));
       }
     }
 
     return true;
+  }
+
+  private double nextThreshold() {
+    return 1 + (threshold - 1) / (iterations / batchSize - 1);
   }
 }

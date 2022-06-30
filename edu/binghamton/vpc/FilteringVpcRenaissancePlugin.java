@@ -40,13 +40,18 @@ public class FilteringVpcRenaissancePlugin
               .mapToDouble(s -> s.duration)
               .average()
               .orElse(0);
-      if (runtime / baselineRuntime > threshold) {
+      if (runtime / baselineRuntime > nextThreshold(opIndex)) {
         System.out.println(
             String.format(
                 "last %d runs exceeded threshold (%f / %f = %f > %f)",
                 opIndex, runtime, baselineRuntime, runtime / baselineRuntime, threshold));
         collector.dumpWithStatus(false);
         return false;
+      } else {
+        System.out.println(
+            String.format(
+                "last %d runs met threshold (%f / %f = %f < %f)",
+                opIndex, runtime, baselineRuntime, runtime / baselineRuntime, threshold));
       }
     }
 
@@ -56,5 +61,9 @@ public class FilteringVpcRenaissancePlugin
   @Override
   public boolean isLast(String benchmark, int opIndex) {
     return true;
+  }
+
+  private double nextThreshold(int opIndex) {
+    return 1 + (threshold - 1) / (opIndex / batchSize - 1);
   }
 }
