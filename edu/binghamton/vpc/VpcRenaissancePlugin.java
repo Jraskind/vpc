@@ -13,11 +13,14 @@ public class VpcRenaissancePlugin
     collector.start();
   }
 
+  @Override
   public void beforeOperationTearDown(String benchmark, int opIndex, long durationNanos) {
     collector.stop();
   }
 
+  @Override
   public void beforeBenchmarkTearDown(String benchmark) {
+    System.out.println("dumping data");
     collector.dump();
   }
 }

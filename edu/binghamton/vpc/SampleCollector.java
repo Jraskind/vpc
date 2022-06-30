@@ -1,19 +1,40 @@
 package edu.binghamton.vpc;
 
-import static java.util.stream.Collectors.joining;
-
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.stream.IntStream;
 
 public final class SampleCollector {
+  public static double getBaselineRuntime(int warmUp) {
+    String baselinePath = String.join("/", System.getProperty("vpc.baseline.path"));
+    if (baselinePath == null) {
+      return 0;
+    }
+    try {
+      BufferedReader reader =
+          new BufferedReader(
+              new FileReader(
+                  String.join("/", System.getProperty("vpc.baseline.path", "."), "summary.csv")));
+      return reader
+          .lines()
+          .skip(1 + warmUp)
+          .mapToDouble(s -> Summary.parseSummary(s).duration)
+          .average()
+          .orElse(0);
+    } catch (Exception e) {
+      return 0;
+    }
+  }
+
   private static long getMonotonicTimestamp() {
     return MonotonicTimestamp.getInstance(
             String.join("/", System.getProperty("vpc.library.path"), "libMonotonic.so"))
@@ -95,6 +116,14 @@ public final class SampleCollector {
     summaryStart = null;
   }
 
+  public List<Summary> getSummary() {
+    return summary;
+  }
+
+  public List<Sample> getSamples() {
+    return samples;
+  }
+
   public void dump() {
     executor.shutdown();
     try {
@@ -144,12 +173,31 @@ public final class SampleCollector {
     }
   }
 
+  public void dumpWithStatus(boolean accepted) {
+    dump();
+    dumpStatus(accepted);
+  }
+
+  public void dumpStatus(boolean accepted) {
+    try {
+      new File(
+              String.join(
+                  "/",
+                  System.getProperty("vpc.output.directory"),
+                  accepted ? "accepted" : "rejected"))
+          .createNewFile();
+    } catch (IOException e) {
+      System.out.println("Unable to write VPC status!");
+      e.printStackTrace();
+    }
+  }
+
   // TODO(timur): this is a poor practice; we should use something like a builder.
-  private static class Summary {
-    private final int iteration;
-    private final long timestamp;
-    private final long duration;
-    private final double energy;
+  static class Summary {
+    final int iteration;
+    final long timestamp;
+    final long duration;
+    final double energy;
 
     private Summary(int iteration, long timestamp, double energy) {
       this.iteration = iteration;
@@ -164,12 +212,21 @@ public final class SampleCollector {
       this.duration = duration;
       this.energy = energy;
     }
+
+    private static Summary parseSummary(String summaryString) {
+      String[] summaryValues = summaryString.split(",");
+      return new Summary(
+          Integer.parseInt(summaryValues[0]),
+          Long.parseLong(summaryValues[1]),
+          Long.parseLong(summaryValues[2]),
+          Double.parseDouble(summaryValues[3]));
+    }
   }
 
-  private static class Sample {
-    private final int iteration;
-    private final long timestamp;
-    private final double[][] energy;
+  static class Sample {
+    final int iteration;
+    final long timestamp;
+    final double[][] energy;
 
     private Sample(int iteration, long timestamp, double[][] energy) {
       this.iteration = iteration;

@@ -25,6 +25,7 @@ public class VpcDacapoCallback extends Callback {
   @Override
   public boolean runAgain() {
     if (!super.runAgain()) {
+      System.out.println("dumping data");
       collector.dump();
       return false;
     } else {
