@@ -1,5 +1,6 @@
 package edu.binghamton.vpc;
 
+/** Class that provides a singleton interface to c's monotonic timestamp. */
 public final class MonotonicTimestamp {
   private static MonotonicTimestamp instance;
 

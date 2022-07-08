@@ -2,6 +2,7 @@ package edu.binghamton.vpc;
 
 import org.renaissance.Plugin;
 
+/** {@link Callback} for renaissance that wraps usage of the {@link SampleCollector}. */
 public class VpcRenaissancePlugin
     implements Plugin.BeforeBenchmarkTearDownListener,
         Plugin.AfterOperationSetUpListener,

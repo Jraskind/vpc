@@ -11,23 +11,29 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.IntStream;
 
+/**
+ * Data collector that produces both a runtime {@code Summary} and a online collection of
+ * {@Samples}.
+ */
 public final class SampleCollector {
+  /** Loads the data from the baseline and computes the mean runtime after {@code warmUp}. */
+  // TODO: this doesn't report a missing baseline verbosely. should we fail if it's missing?
   public static double getBaselineRuntime(int warmUp) {
+    // TODO: this is a little hacky; we should see if there's a better way to access the
+    // baseline
     String baselinePath = String.join("/", System.getProperty("vpc.baseline.path"));
     if (baselinePath == null) {
       return 0;
     }
     try {
+      // TODO: for now, we only care about the overhead. we may want a verbose "metric"
       BufferedReader reader =
-          new BufferedReader(
-              new FileReader(
-                  String.join("/", System.getProperty("vpc.baseline.path", "."), "summary.csv")));
+          new BufferedReader(new FileReader(String.join("/", baselinePath, "summary.csv")));
       return reader
           .lines()
           .skip(1 + warmUp)
@@ -37,31 +43,6 @@ public final class SampleCollector {
     } catch (Exception e) {
       return 0;
     }
-  }
-
-  private static long getMonotonicTimestamp() {
-    return MonotonicTimestamp.getInstance(
-            String.join("/", System.getProperty("vpc.library.path"), "libMonotonic.so"))
-        .getMonotonicTimestamp();
-  }
-
-  private static double[][] getEnergy() {
-    return Rapl.getInstance(String.join("/", System.getProperty("vpc.library.path"), "libRapl.so"))
-        .getEnergyStats();
-  }
-
-  private static double computeEnergyDifference(double[][] first, double[][] second) {
-    double energy = 0;
-    for (int socket = 0; socket < Rapl.getInstance().getSocketCount(); socket++) {
-      for (int component = 0; component < first[socket].length; component++) {
-        double diff = second[socket][component] - first[socket][component];
-        if (diff < 0) {
-          diff += Rapl.getInstance().getWrapAroundEnergy();
-        }
-        energy += diff;
-      }
-    }
-    return energy;
   }
 
   private final ArrayList<Summary> summary = new ArrayList<>();
@@ -78,9 +59,13 @@ public final class SampleCollector {
     executor = Executors.newSingleThreadExecutor();
   }
 
+  /**
+   * Collects start data for a {@code Summary} and starts collecting {@code Samples} concurrently.
+   */
   public void start() {
     isRunning = true;
 
+    // TODO: it's possible we can wrap the data collection into a {@link Supplier}
     summaryStart = new Sample(iteration, getMonotonicTimestamp(), getEnergy());
     sampleFuture =
         executor.submit(
@@ -100,6 +85,7 @@ public final class SampleCollector {
             });
   }
 
+  /** Collects end data for a {@code Summary} and stops collecting {@code Samples} concurrently. */
   public void stop() {
     isRunning = false;
 
@@ -120,14 +106,8 @@ public final class SampleCollector {
     summaryStart = null;
   }
 
-  public List<Summary> getSummary() {
-    return summary;
-  }
-
-  public List<Sample> getSamples() {
-    return samples;
-  }
-
+  /** Writes the {@link Summary} and {@link Samples} to the underlying directory as csvs. */
+  // TODO: do we want a different data type? what happens if we need more data like counters?
   public void dump() {
     executor.shutdown();
     try {
@@ -177,11 +157,13 @@ public final class SampleCollector {
     }
   }
 
+  /** {@link dumps} data from the collector and marks it as accepted or rejected. */
   public void dumpWithStatus(boolean accepted) {
     dump();
     dumpStatus(accepted);
   }
 
+  /** Marks the data as accepted or rejected. */
   public void dumpStatus(boolean accepted) {
     try {
       new File(
@@ -194,6 +176,16 @@ public final class SampleCollector {
       System.out.println("Unable to write VPC status!");
       e.printStackTrace();
     }
+  }
+
+  // helper methods to get the data for the dynamic controller
+  // TODO: the evaluation should exist within some sort of "metric evaluator"
+  public List<Summary> getSummary() {
+    return summary;
+  }
+
+  public List<Sample> getSamples() {
+    return samples;
   }
 
   // TODO(timur): this is a poor practice; we should use something like a builder.
@@ -237,5 +229,31 @@ public final class SampleCollector {
       this.timestamp = timestamp;
       this.energy = energy;
     }
+  }
+
+  // helpers methods that grab/handle data
+  private static long getMonotonicTimestamp() {
+    return MonotonicTimestamp.getInstance(
+            String.join("/", System.getProperty("vpc.library.path"), "libMonotonic.so"))
+        .getMonotonicTimestamp();
+  }
+
+  private static double[][] getEnergy() {
+    return Rapl.getInstance(String.join("/", System.getProperty("vpc.library.path"), "libRapl.so"))
+        .getEnergyStats();
+  }
+
+  private static double computeEnergyDifference(double[][] first, double[][] second) {
+    double energy = 0;
+    for (int socket = 0; socket < Rapl.getInstance().getSocketCount(); socket++) {
+      for (int component = 0; component < first[socket].length; component++) {
+        double diff = second[socket][component] - first[socket][component];
+        if (diff < 0) {
+          diff += Rapl.getInstance().getWrapAroundEnergy();
+        }
+        energy += diff;
+      }
+    }
+    return energy;
   }
 }

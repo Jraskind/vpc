@@ -58,6 +58,8 @@ public final class Rapl {
    *     <p>subarray structure is architecture dependent. Typically, 0 -> dram, 1 -> cpu, 2 ->
    *     package.
    */
+  // TODO: this breaks without the wrap around. we may want to reorganize this to encapsulate the
+  // correction
   public synchronized double[][] getEnergyStats() {
     // guard if CPUScaler isn't available
     if (socketCount < 0) {
@@ -92,6 +94,7 @@ public final class Rapl {
   }
 
   /** @returns the sum of all energy counters */
+  // TODO: this doesn't work since it ignores wrap around
   public synchronized double getEnergy() {
     // guard if CPUScaler isn't available
     if (socketCount < 0) {
