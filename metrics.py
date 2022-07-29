@@ -8,7 +8,7 @@ import pandas as pd
 
 # default values for the experiments run on jolteon
 WRAP_AROUND_VALUE = 262143
-WARM_UP = 3
+WARM_UP = 5
 BUCKET_SIZE_MS = 1
 
 
@@ -62,13 +62,19 @@ def bucket_probes(probes, normalize_timestamps_fn=None):
 
 
 # TODO: the synthesis and metric computations are a little crude
-def synthesize_probes(probes, normalize_timestamps_fn=None):
+def synthesize_probes(probes, normalize_timestamps_fn=None, debug=False):
     # diff will do begin - end, so we have to flip things a little bit
     # TODO: does this handle single probes?
-    probes = -probes.unstack(fill_value=0).cumsum().diff(axis=1).iloc[:, -1]
+    
+    probes = probes.unstack(fill_value=0)
+    depth_probes = pd.DataFrame(columns=["depth"])
+    depth_probes["depth"] = -probes.cumsum().diff(axis=1).iloc[:, -1]
+    depth_probes.loc[depth_probes.depth == 0, 'depth'] = probes[probes.columns[-1]]
+    probes = depth_probes["depth"]
     probes = probes - probes.min()
     probes.name = 'events'
-
+    if debug == True:
+        print(probes)
     return probes
 
 
@@ -159,6 +165,11 @@ def main():
                     norm_with_buckets(args.bucket),
                 )
                 if probes.sum() > 0:
+                    #if bench == "zxing" and probe == "CallStaticVoidMethodV":
+                        #print(probes)
+                        #probes = synthesize_probes(probes, debug=True)
+                        #quit()
+                    #else:
                     probes = synthesize_probes(probes)
 
                     df = pd.read_csv(os.path.join(data_dir, 'energy.csv'))
