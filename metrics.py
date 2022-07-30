@@ -67,11 +67,15 @@ def synthesize_probes(probes, normalize_timestamps_fn=None, debug=False):
     # TODO: does this handle single probes?
     
     probes = probes.unstack(fill_value=0)
-    depth_probes = pd.DataFrame(columns=["depth"])
-    depth_probes["depth"] = -probes.cumsum().diff(axis=1).iloc[:, -1]
-    depth_probes.loc[depth_probes.depth == 0, 'depth'] = probes[probes.columns[-1]]
-    probes = depth_probes["depth"]
-    probes = probes - probes.min()
+    if(len(probes.columns) == 1):
+        #Don't synthesize, single probe
+        probes = probes[probes.columns[0]]
+    else:
+        depth_probes = pd.DataFrame(columns=["depth"])
+        depth_probes["depth"] = -probes.cumsum().diff(axis=1).iloc[:, -1]
+        depth_probes.loc[depth_probes.depth == 0, 'depth'] = probes[probes.columns[-1]]
+        probes = depth_probes["depth"]
+        probes = probes - probes.min()
     probes.name = 'events'
     if debug == True:
         print(probes)
