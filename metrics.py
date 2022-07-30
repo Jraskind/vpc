@@ -64,7 +64,6 @@ def bucket_probes(probes, normalize_timestamps_fn=None):
 # TODO: the synthesis and metric computations are a little crude
 def synthesize_probes(probes, normalize_timestamps_fn=None, debug=False):
     # diff will do begin - end, so we have to flip things a little bit
-    # TODO: does this handle single probes?
     
     probes = probes.unstack(fill_value=0)
     if(len(probes.columns) == 1):
