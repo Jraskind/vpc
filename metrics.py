@@ -71,10 +71,11 @@ def synthesize_probes(probes, normalize_timestamps_fn=None, debug=False):
         probes = probes[probes.columns[0]]
     else:
         depth_probes = pd.DataFrame(columns=["depth"])
+        #there may be missing probes events, so the output might be strange
         depth_probes["depth"] = -probes.cumsum().diff(axis=1).iloc[:, -1]
         depth_probes.loc[depth_probes.depth == 0, 'depth'] = probes[probes.columns[-1]]
         probes = depth_probes["depth"]
-        probes = probes - probes.min()
+        #probes = probes - probes.min()
     probes.name = 'events'
     if debug == True:
         print(probes)
@@ -85,7 +86,6 @@ def compute_metrics(aligned):
     present = (aligned.events > 0).sum()
     events = aligned.events.sum()
     intervals = len(aligned)
-
     if events == 0:
         return [np.nan, 0, 0, np.nan]
 
@@ -169,7 +169,6 @@ def main():
                 )
                 if probes.sum() > 0:
                     probes = synthesize_probes(probes)
-
                     df = pd.read_csv(os.path.join(data_dir, 'energy.csv'))
                     df = df[df.iteration > args.warm_up]
                     power = samples_to_power(df, norm_with_buckets(args.bucket))
@@ -180,7 +179,6 @@ def main():
                     df = pd.concat([power, probes], axis=1).sort_index()
                     df = df.dropna(subset=['power']).ffill().dropna()
                     df.events = df.events.astype(int)
-
                     metrics.append([probe, bench] + compute_metrics(df))
                 else:
                     print('no probe events for {}!'.format(benchmark))
