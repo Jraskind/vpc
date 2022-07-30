@@ -168,11 +168,6 @@ def main():
                     norm_with_buckets(args.bucket),
                 )
                 if probes.sum() > 0:
-                    #if bench == "zxing" and probe == "CallStaticVoidMethodV":
-                        #print(probes)
-                        #probes = synthesize_probes(probes, debug=True)
-                        #quit()
-                    #else:
                     probes = synthesize_probes(probes)
 
                     df = pd.read_csv(os.path.join(data_dir, 'energy.csv'))
