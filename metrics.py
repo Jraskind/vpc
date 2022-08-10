@@ -64,27 +64,29 @@ def bucket_probes(probes, normalize_timestamps_fn=None):
 # TODO: the synthesis and metric computations are a little crude
 def synthesize_probes(probes, normalize_timestamps_fn=None, debug=False):
     # diff will do begin - end, so we have to flip things a little bit
-    
+    # "events" is the synthesized depth column, so "no_synth" is the raw count for the bucket
+    ret_probes = pd.DataFrame(columns=["events", "no_synth"])
     probes = probes.unstack(fill_value=0)
     if(len(probes.columns) == 1):
         #Don't synthesize, single probe
-        probes = probes[probes.columns[0]]
+        ret_probes.events = probes[probes.columns[0]]
+        ret_probes.no_synth = probes[probes.columns[0]]
     else:
         depth_probes = pd.DataFrame(columns=["depth"])
         #there may be missing probes events, so the output might be strange
         depth_probes["depth"] = -probes.cumsum().diff(axis=1).iloc[:, -1]
-        depth_probes.loc[depth_probes.depth == 0, 'depth'] = probes[probes.columns[-1]]
-        probes = depth_probes["depth"]
+        depth_probes.loc[depth_probes.depth == 0, 'depth'] = probes.min(axis=1)
+        ret_probes.events = depth_probes["depth"]
+        ret_probes.no_synth = probes[probes.columns[0]] + probes[probes.columns[1]]
         #probes = probes - probes.min()
-    probes.name = 'events'
     if debug == True:
-        print(probes)
-    return probes
+        print(ret_probes)
+    return ret_probes
 
 
 def compute_metrics(aligned):
     present = (aligned.events > 0).sum()
-    events = aligned.events.sum()
+    events = aligned.no_synth.sum()
     intervals = len(aligned)
     if events == 0:
         return [np.nan, 0, 0, np.nan]
