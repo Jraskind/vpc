@@ -85,7 +85,7 @@ def synthesize_probes(probes, normalize_timestamps_fn=None, debug=False):
 
 
 def compute_metrics(aligned):
-    aligned = aligned.rolling(window=4).mean()
+    aligned = aligned.rolling(window=64).mean()
     present = (aligned.events > 0).sum()
     events = aligned.no_synth.sum()
     intervals = len(aligned)
@@ -182,6 +182,7 @@ def main():
                     df = pd.concat([power, probes], axis=1).sort_index()
                     df = df.dropna(subset=['power']).ffill().dropna()
                     df.events = df.events.astype(int)
+                    df.to_csv("{}/{}/{}/aligned.csv".format(args.data, probe, benchmark))
                     metrics.append([probe, bench] + compute_metrics(df))
                 else:
                     print('no probe events for {}!'.format(benchmark))
