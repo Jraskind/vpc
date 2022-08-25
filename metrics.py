@@ -85,7 +85,7 @@ def synthesize_probes(probes, normalize_timestamps_fn=None, debug=False):
 
 
 def compute_metrics(aligned):
-    aligned = aligned.rolling(window=64).mean()
+    aligned = aligned.rolling(window=4).mean()
     present = (aligned.events > 0).sum()
     events = aligned.no_synth.sum()
     intervals = len(aligned)

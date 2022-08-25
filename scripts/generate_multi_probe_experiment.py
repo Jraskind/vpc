@@ -4,6 +4,7 @@
 #       i.e. library_path, script_path, dacapo_path, renaissance_path, renaissance_jar, when calling the renaissance jar, & the references to vpc.jar
 import argparse
 import os
+import json
 parser = argparse.ArgumentParser(description="Probes Parser", formatter_class=argparse.RawDescriptionHelpFormatter)
 parser.add_argument("-iters","--iters", type=int,help="Number of iterations")
 parser.add_argument("-exp_path","--exp_path", type=str,help="Path where benchmarks file is stored")
@@ -29,33 +30,40 @@ def create_dir(str_dir):
         quit();
 
 create_dir(launch_path)
-with open(exp_path + "/benchmarks") as fp:
+with open(exp_path + "/benchmarks.json") as fp:
     #cluster_count and bench_count are used to enforce a naming convention for the experimental folders
     # <cluster #>_<bench #>_benchmark
     cluster_count = 0
-    line = fp.readline()
-    while(line and line != "\n"):
-        line_segments = line.split(" ")
+    tests = json.load(fp)
+    for test in tests:
         #    <benchmark suite letter> <benchmarks separated by commas> <probes>
-        benchmark_list = line_segments[1]
-        probes_list = line_segments[2].strip()
-        is_dacapo = (line_segments[0] == 'd')
+        benchmark = test["benchmark"]
+        probes = test["probes"]
+        suite = test["suite"]
+        if(suite == "dacapo"):
+            size = test["size"]
+        callback = test["callback"]
+        filter_status = test["filter"]
+        if(filter_status == "yes"):
+            window = test["window"]
+            variance = test["variance"]
+            baseline_path = test["baseline_path"]
         output_file = open(launch_path + "cluster_" + str(cluster_count) + ".sh", "w")
-        bench_count = 0
-        for benchmark in benchmark_list.split(","):
-            if(is_dacapo):
-                #Dacapo benchmarks need the dacapo_jars
-                output_file.write("%s -XX:+ExtendedDTraceProbes -Dvpc.library.path=%s -Dvpc.output.directory=%s/%d_%d_%s -cp %s Harness %s -s small -no-validation --iterations %d -c edu.binghamton.vpc.VpcDacapoCallback &\n"%(java_path,library_path,exp_path,cluster_count,bench_count,benchmark,dacapo_path,benchmark, iters))
+        if(suite == "dacapo"):
+            if(filter_status == "yes"):
+                output_file.write(f'{java_path} -XX:+ExtendedDTraceProbes -Dvpc.library.path={library_path} -Dvpc.output.directory={exp_path}/{cluster_count}_{benchmark} -Dvpc.baseline.path={baseline_path} -cp {dacapo_path} Harness {benchmark} -s {size} -no-validation --iterations {iters} --window {window} --variance {variance} -c edu.binghamton.vpc.{callback} &\n')
             else:
-                #Renaissance benchmarks need the ren_jars
-                output_file.write("%s -XX:+ExtendedDTraceProbes -Dvpc.library.path=%s -Dvpc.output.directory=%s/%d_%d_%s -cp %s -jar %s -r %d --plugin /home/jraskin3/timur_vpc/vpc.jar!edu.binghamton.vpc.VpcRenaissancePlugin %s &\n"%(java_path,library_path,exp_path,cluster_count,bench_count,benchmark,renaissance_path, renaissance_jar, iters, benchmark))
-            #Both Dacapo & Renaissance have the same java_multi_probes step 
-            if probes_list != "none":
-                output_file.write("python3 %sjava_multi_probe.py --pid $! --probes=%s --output_directory=%s/%d_%d_%s \n"%(script_path,probes_list,exp_path,cluster_count,bench_count,benchmark))
+                output_file.write(f'{java_path} -XX:+ExtendedDTraceProbes -Dvpc.library.path={library_path} -Dvpc.output.directory={exp_path}/{cluster_count}_{benchmark} -cp {dacapo_path} Harness {benchmark} -s {size} -no-validation --iterations {iters} -c edu.binghamton.vpc.{callback} &\n')
+        else:
+            if(filter_status == "yes"):
+                output_file.write(f'{java_path} -XX:+ExtendedDTraceProbes -Dvpc.library.path={library_path} -Dvpc.output.directory={exp_path}/{cluster_count}_{benchmark} -Dvpc.baseline.path={baseline_path} -Dvpc.renaissance.args={iters},{window},{variance} -cp {renaissance_path} -jar {renaissance_jar} --plugin /home/jraskin3/timur_vpc/vpc.jar!edu.binghamton.vpc.{callback} --policy /home/jraskin3/timur_vpc/vpc.jar!edu.binghamton.vpc.{callback} {benchmark} &\n')
             else:
-                output_file.write("tail --pid=$! -f /dev/null \n")
-            create_dir("%s/%d_%d_%s"%(exp_path,cluster_count,bench_count,benchmark))
-            bench_count = bench_count + 1
+                output_file.write(f'{java_path} -XX:+ExtendedDTraceProbes -Dvpc.library.path={library_path} -Dvpc.output.directory={exp_path}/{cluster_count}_{benchmark} -cp {renaissance_path} -jar {renaissance_jar} -r {iters} --plugin /home/jraskin3/timur_vpc/vpc.jar!edu.binghamton.vpc.{callback} {benchmark} &\n')
+        if probes != "none":
+                output_file.write(f"python3 {script_path}java_multi_probe.py --pid $! --probes={probes} --output_directory={exp_path}/{cluster_count}_{benchmark} \n")
+        else:
+            output_file.write("tail --pid=$! -f /dev/null \n")
+        create_dir("%s/%d_%s"%(exp_path,cluster_count,benchmark))
         cluster_count = cluster_count + 1
         output_file.close()
-        line = fp.readline()
+fp.close()
