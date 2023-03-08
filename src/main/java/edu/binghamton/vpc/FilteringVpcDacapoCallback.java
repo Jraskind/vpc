@@ -5,6 +5,7 @@ import org.dacapo.harness.CommandLineArgs;
 
 public class FilteringVpcDacapoCallback extends Callback {
   private final SampleCollector collector = new SampleCollector();
+  private final SampleCollectorPapi papiCollector = new SampleCollectorPapi();
   private final int batchSize;
   private final double threshold;
   private final double baselineRuntime;
@@ -20,18 +21,21 @@ public class FilteringVpcDacapoCallback extends Callback {
   public void start(String benchmark) {
     super.start(benchmark);
     collector.start();
+    papiCollector.start();
   }
 
   @Override
   public void stop(long w) {
     super.stop(w);
     collector.stop();
+    papiCollector.stop();
   }
 
   @Override
   public boolean runAgain() {
     if (!super.runAgain()) {
       collector.dumpWithStatus(true);
+      papiCollector.dumpWithStatus(true);
       return false;
     } else if (iterations % batchSize == 0 && iterations > batchSize) {
       // filter by metric
@@ -49,6 +53,7 @@ public class FilteringVpcDacapoCallback extends Callback {
                 "last %d runs exceeded threshold (%f / %f = %f > %f)",
                 iterations, runtime, baselineRuntime, runtime / baselineRuntime, threshold));
         collector.dumpWithStatus(false);
+	papiCollector.dumpWithStatus(false);
         return false;
       } else {
         System.out.println(

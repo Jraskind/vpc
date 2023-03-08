@@ -5,3 +5,7 @@
 
 bin
 lib
+target
+
+*~
+*.csv

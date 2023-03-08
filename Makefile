@@ -37,13 +37,17 @@ libRapl.so: $(RAPL_SOURCES)
 	$(CC) -shared -Wl,-soname,$@ -o $(TARGET)/$@ $^ $(JNI_INCLUDE) -lc
 	rm -f $^
 
+native: libRapl.so libMonotonic.so
+	@echo 'built native libraries'
+
 smoke_test: jar libRapl.so libMonotonic.so
 	java -cp $(JAR) edu.binghamton.vpc.MonotonicTimestamp $(TARGET)/libMonotonic.so
 	java -cp $(JAR) edu.binghamton.vpc.Rapl $(TARGET)/libRapl.so
 	@echo 'all targets successfully built!'
 
 clean:
-	rm -r $(SOURCES)/*.o $(TARGET) $(JAVA_SOURCES)/*.class $(JAR)
+	rm -r $(TARGET)
+	# rm -r $(SOURCES)/*.o $(TARGET) $(JAVA_SOURCES)/*.class $(JAR)
 
 get_java_deps:
 	mkdir -p lib

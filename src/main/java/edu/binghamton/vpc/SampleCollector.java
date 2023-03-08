@@ -15,6 +15,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.IntStream;
+import java.util.List;
 
 /**
  * Data collector that produces both a runtime {@code Summary} and a online collection of

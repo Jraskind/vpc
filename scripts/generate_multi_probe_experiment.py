@@ -15,9 +15,10 @@ exp_path = args.exp_path
 java_path = args.java_path
 iters = args.iters
 launch_path = exp_path + "/launch/"
+library_extra_papi = "LD_LIBRARY_PATH=/home/jraskin3/timur_vpc/bin/.:/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH"
 library_path = "/home/jraskin3/timur_vpc/bin/"
-dacapo_path = "/home/jraskin3/timur_vpc/lib/dacapo.jar:/home/jraskin3/timur_vpc/vpc.jar"
-renaissance_path = "/home/jraskin3/timur_vpc/lib/renaissance-gpl-0.14.1.jar:/home/jraskin3/timur_vpc/vpc.jar"
+dacapo_path = "/home/jraskin3/timur_vpc/lib/dacapo.jar:/home/jraskin3/timur_vpc/vpc-jar-scratch/vpc.jar"
+renaissance_path = "/home/jraskin3/timur_vpc/lib/renaissance-gpl-0.14.1.jar:/home/jraskin3/timur_vpc/vpc-jar-scratch/vpc.jar"
 renaissance_jar = "/home/jraskin3/timur_vpc/lib/renaissance-gpl-0.14.1.jar"
 script_path = "/home/jraskin3/timur_vpc/scripts/"
 def create_dir(str_dir):
@@ -40,6 +41,7 @@ with open(exp_path + "/benchmarks.json") as fp:
         benchmark = test["benchmark"]
         probes = test["probes"]
         suite = test["suite"]
+        hpcs = test["hpcs"]
         if(suite == "dacapo"):
             size = test["size"]
         callback = test["callback"]
@@ -51,14 +53,14 @@ with open(exp_path + "/benchmarks.json") as fp:
         output_file = open(launch_path + "cluster_" + str(cluster_count) + ".sh", "w")
         if(suite == "dacapo"):
             if(filter_status == "yes"):
-                output_file.write(f'{java_path} -XX:+ExtendedDTraceProbes -Dvpc.library.path={library_path} -Dvpc.output.directory={exp_path}/{cluster_count}_{benchmark} -Dvpc.baseline.path={baseline_path} -cp {dacapo_path} Harness {benchmark} -s {size} -no-validation --iterations {iters} --window {window} --variance {variance} -c edu.binghamton.vpc.{callback} &\n')
+                output_file.write(f'{library_extra_papi} {java_path} -XX:+ExtendedDTraceProbes -Dvpc.library.path={library_path} -Dvpc.output.directory={exp_path}/{cluster_count}_{benchmark} -Dvpc.baseline.path={baseline_path} -Dvpc.hpc.names={hpcs} -cp {dacapo_path} Harness {benchmark} -s {size} -no-validation --iterations {iters} --window {window} --variance {variance} -c edu.binghamton.vpc.{callback} &\n')
             else:
-                output_file.write(f'{java_path} -XX:+ExtendedDTraceProbes -Dvpc.library.path={library_path} -Dvpc.output.directory={exp_path}/{cluster_count}_{benchmark} -cp {dacapo_path} Harness {benchmark} -s {size} -no-validation --iterations {iters} -c edu.binghamton.vpc.{callback} &\n')
+                output_file.write(f'{library_extra_papi} {java_path} -XX:+ExtendedDTraceProbes -Dvpc.library.path={library_path} -Dvpc.output.directory={exp_path}/{cluster_count}_{benchmark} -Dvpc.hpc.names={hpcs} -cp {dacapo_path} Harness {benchmark} -s {size} -no-validation --iterations {iters} -c edu.binghamton.vpc.{callback} &\n')
         else:
             if(filter_status == "yes"):
-                output_file.write(f'{java_path} -XX:+ExtendedDTraceProbes -Dvpc.library.path={library_path} -Dvpc.output.directory={exp_path}/{cluster_count}_{benchmark} -Dvpc.baseline.path={baseline_path} -Dvpc.renaissance.args={iters},{window},{variance} -cp {renaissance_path} -jar {renaissance_jar} --plugin /home/jraskin3/timur_vpc/vpc.jar!edu.binghamton.vpc.{callback} --policy /home/jraskin3/timur_vpc/vpc.jar!edu.binghamton.vpc.{callback} {benchmark} &\n')
+                output_file.write(f'{library_extra_papi} {java_path} -XX:+ExtendedDTraceProbes -Dvpc.library.path={library_path} -Dvpc.output.directory={exp_path}/{cluster_count}_{benchmark} -Dvpc.baseline.path={baseline_path} -Dvpc.renaissance.args={iters},{window},{variance} -Dvpc.hpc.names={hpcs} -cp {renaissance_path} -jar {renaissance_jar} --plugin /home/jraskin3/timur_vpc/vpc-jar-scratch/vpc.jar!edu.binghamton.vpc.{callback} --policy /home/jraskin3/timur_vpc/vpc-jar-scratch/vpc.jar!edu.binghamton.vpc.{callback} {benchmark} &\n')
             else:
-                output_file.write(f'{java_path} -XX:+ExtendedDTraceProbes -Dvpc.library.path={library_path} -Dvpc.output.directory={exp_path}/{cluster_count}_{benchmark} -cp {renaissance_path} -jar {renaissance_jar} -r {iters} --plugin /home/jraskin3/timur_vpc/vpc.jar!edu.binghamton.vpc.{callback} {benchmark} &\n')
+                output_file.write(f'{library_extra_papi} {java_path} -XX:+ExtendedDTraceProbes -Dvpc.library.path={library_path} -Dvpc.output.directory={exp_path}/{cluster_count}_{benchmark} -Dvpc.hpc.names={hpcs} -cp {renaissance_path} -jar {renaissance_jar} -r {iters} --plugin /home/jraskin3/timur_vpc/vpc-jar-scratch/vpc.jar!edu.binghamton.vpc.{callback} {benchmark} &\n')
         if probes != "none":
                 output_file.write(f"python3 {script_path}java_multi_probe.py --pid $! --probes={probes} --output_directory={exp_path}/{cluster_count}_{benchmark} \n")
         else:
