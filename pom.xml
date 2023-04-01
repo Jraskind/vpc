@@ -15,9 +15,23 @@
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <maven.compiler.source>11</maven.compiler.source>
       <maven.compiler.target>11</maven.compiler.target>
+      <grpc.version>1.50.2</grpc.version>
+      <tomcat.version>6.0.53</tomcat.version>
+      <protoc.version>3.6.1</protoc.version>
+      <os.plugin.version>1.6.2</os.plugin.version>
+      <protobuf.plugin.version>0.6.1</protobuf.plugin.version>
+      <junit.version>4.11</junit.version>
+      <jmh.version>1.35</jmh.version>
   </properties>
 
   <dependencies>
+    <dependency>
+        <groupId>jRAPL</groupId>
+        <artifactId>jrapl</artifactId>
+        <version>1.0</version>
+        <!-- <scope>system</scope>
+        <systemPath>${basedir}/lib/renaissance-gpl-0.14.1.jar</systemPath> -->
+    </dependency>
     <dependency>
         <groupId>org.renaissance</groupId>
         <artifactId>renaissance</artifactId>
@@ -32,12 +46,30 @@
         <!-- <scope>system</scope>
         <systemPath>${basedir}/lib/dacapo.jar</systemPath> -->
     </dependency>
-    <dependency>
+    <!-- <dependency>
         <groupId>papi</groupId>
         <artifactId>papi</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.0</version> -->
         <!-- <scope>system</scope>
         <systemPath>${basedir}/lib/papi.jar</systemPath> -->
+    <!-- </dependency> -->
+    <!-- jmh deps -->
+    <dependency>
+        <groupId>org.openjdk.jmh</groupId>
+        <artifactId>jmh-core</artifactId>
+        <version>1.35</version>
+        <!-- <scope>test</scope> -->
+    </dependency>
+    <dependency>
+        <groupId>org.openjdk.jmh</groupId>
+        <artifactId>jmh-generator-annprocess</artifactId>
+        <version>1.35</version>
+        <!-- <scope>test</scope> -->
+    </dependency>
+    <dependency>
+        <groupId>com.github.biboudis</groupId>
+        <artifactId>jmh-profilers</artifactId>
+        <version>0.1.4</version>
     </dependency>
   </dependencies>
 
@@ -77,6 +109,11 @@
                 </goals>
             </execution>
         </executions>
+    </plugin>
+    <plugin>
+        <groupId>pw.krejci</groupId>
+        <artifactId>jmh-maven-plugin</artifactId>
+        <version>0.2.2</version>
     </plugin>
     </plugins>
   </build>
